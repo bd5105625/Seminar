@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QVBoxLayout, QLa
     QHBoxLayout , QMainWindow, QLineEdit, QTableView, QFileDialog, QMessageBox
 from PyQt5.QtCore import *
 import pandas as pd
+import os
+import preprocess
 # from PyQt5.QtWidgets import QWidgets
 
 class CustomQWidget(QWidget):
@@ -14,7 +16,7 @@ class CustomQWidget(QWidget):
     def setlist(self, num , orgfile , labelfile):
         index = QLabel()
         index.setText(str(num+1))
-        index.setFixedSize(20,20)
+        index.setFixedSize(30,30)
         pic = QLabel()
         pic.setPixmap(QtGui.QPixmap(orgfile).scaled(150,150))  #control pixmap size by using scaled
         pic.setFixedSize(150,150)
@@ -35,6 +37,12 @@ class CustomQWidget(QWidget):
 class TabelView(QtCore.QAbstractTableModel):
     def __init__(self,data):
         super(TabelView, self).__init__()
+        # self._data = []
+        # print(len(data) , data)
+        # if len(data) != 0:
+        #     for item in data:
+        #         # print(type(item))
+        #         self._data.append([]),self._data[len(self._data)-1].append(item.split('/')[-1])
         self._data = data
         self.list = []
     def data(self, index, role):
@@ -73,7 +81,6 @@ class ResultPage:
         list = QListWidget()
         # filepath = "test.jpg"
         for i in range(0 , len(filelist)):
-            print("time:", i)
             filepath = filelist[i]
             item = QListWidgetItem(list)
             item_widget = CustomQWidget()
@@ -126,6 +133,9 @@ class UploadPage():
     def __init__(self, *args,**kwargs):
         # super(TabelView,self).__init__(self, *args,**kwargs)
         self.temp = []
+        self.temp2 = []
+        self.rootpath = ""
+        self.filelist = [] #store every jpg name
         self.patient = QLineEdit(self)
         self.label1 = QLabel(self)
         self.label2 = QLabel(self)
@@ -168,16 +178,20 @@ class UploadPage():
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
-        print(self.files)
+        self.files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", ".","All Files (*);;Image Files(*.jpg *.png)", options=options)
+        # self.files.append(self.file)
+        # print(self.files , type(self.files) , type(self.file))
         if self.files:
             for item in self.files:
                 self.temp.append([]),self.temp[len(self.temp)-1].append(item.split('/')[-1])
-        # print("temp" , len(self.temp))
+                self.temp2.append(item)
+                self.filelist.append(item.split('/')[-1])
         if len(self.temp) != 0:
             self.model = TabelView(self.temp)
             self.table.setModel(self.model)
         self.label1.setText("已上傳:" + str(len(self.temp)))
+        print(os.getcwd() , self.temp2[0])
+        self.rootpath = self.temp2[0].split(os.getcwd().replace('\\' , '/')+'/')[-1].split(self.temp2[0].split('/')[-1])[0]
     def inittable(self):
         data = [
             ['']
@@ -249,9 +263,11 @@ class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage):
         else:
             super(FirstWindow,self).closepageupload()
             # super(FirstWindow,self).showresultpage(self.temp)
-            super(FirstWindow,self).setpage(self.files)
+            super(FirstWindow,self).setpage(self.temp2)
             self.setCentralWidget(self.window)
             self.name.setText(self.patient.text())
+            print("rootpath = " , self.rootpath , "filelist:" , self.filelist)
+            preprocess.GrayScale(self.rootpath , self.filelist) #run Grayscale and Segmentation function from preprocessing
     def clickchoose(self):
         super(FirstWindow,self).openFileNamesDialog()
     def clickbacktomenu(self):
@@ -260,6 +276,9 @@ class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage):
         super(FirstWindow,self).newbutton()
         self.backtomenu.clicked.connect(self.clickbacktomenu)
         self.temp = []
+        self.temp2 = []
+        self.rootpath = ""
+        self.filelist = []
         self.window.setParent(None) #close result page's layout
 
 if __name__ == '__main__':
