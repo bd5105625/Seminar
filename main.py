@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QVBoxLayout, QLa
 from PyQt5.QtCore import *
 import pandas as pd
 import os
-import preprocess
-# import predict
+# import preprocess
+import predict
 # from PyQt5.QtWidgets import QWidgets
 
 class MyLabel(QLabel):
@@ -23,24 +23,28 @@ class CustomQWidget(QWidget):
         print(labelfile , orgfile)
         index = QLabel()
         index.setText(str(num+1))
-        index.setFixedSize(30,30)
+        index.setFixedSize(100,100)
+        index.setFont(QtGui.QFont("Times" , 24))
         pic = QLabel()
-        # pic.setPixmap(QtGui.QPixmap(orgfile).scaled(200,200))  #control pixmap size by using scaled
-        pic.setPixmap(QtGui.QPixmap(orgfile))
+        pic.setPixmap(QtGui.QPixmap(orgfile).scaled(300,300))  #control pixmap size by using scaled
+        # pic.setPixmap(QtGui.QPixmap(orgfile))
         # pic.setFixedSize(150,150)
         labelpic = QLabel()
         # labelfile = "C:/Users/bd510/Desktop/Seminar/ILD/test/Segmentation/ILD06_55.jpg"
         print(labelfile)
-        # labelpic.setPixmap(QtGui.QPixmap(labelfile).scaled(200,200))
-        labelpic.setPixmap(QtGui.QPixmap(labelfile))
+        labelpic.setPixmap(QtGui.QPixmap(labelfile).scaled(776,388))
+        # labelpic.setPixmap(QtGui.QPixmap(labelfile))
         # labelpic.setFixedSize(150,150)
         filename = QLabel()
         filename.setText(orgfile.split('/')[-1])
-        filename.setFixedSize(150,75)
+        filename.setFixedSize(200,200)
         filename.setAlignment(QtCore.Qt.AlignCenter)
+        filename.setFont(QtGui.QFont("Times" , 24))
         eachscore = QLabel()
-        eachscore.setText(scorenum)
-        eachscore.setFixedSize(30,30)
+        eachscore.setText(str(scorenum*100)+"%")
+        eachscore.setFixedSize(200,200)
+        eachscore.setFont(QtGui.QFont("Times" , 24))
+        eachscore.setAlignment(QtCore.Qt.AlignCenter)
         layout = QHBoxLayout()
         layout.addWidget(index)
         layout.addWidget(pic)
@@ -110,7 +114,7 @@ class ResultPage:
         self.name.setAlignment(QtCore.Qt.AlignCenter)
         self.name.setStyleSheet("border-radius: 25px;border: 1px solid black;")
         leftlayout.addWidget(self.name)
-
+        averagescore = 0
         list = QListWidget()
         root = os.getcwd().replace('\\' , '/') + '/'
         # filepath = "test.jpg"
@@ -118,18 +122,23 @@ class ResultPage:
             filepath = filelist[i]
             item = QListWidgetItem(list)
             item_widget = CustomQWidget()
+            scorelist[i] = float("{:.2f}".format(scorelist[i]))
+            averagescore = averagescore + scorelist[i]
             item_widget.setlist(i,filepath , root + resultlist[i] , scorelist[i])
             item.setSizeHint(item_widget.sizeHint())
             list.addItem(item)
             list.setItemWidget(item, item_widget)
             # list.setFixedHeight(400)
+        averagescore = averagescore / len(filelist)
         leftlayout.addWidget(list)
 
         rightlayout = QVBoxLayout()
         lb1 = QLabel()
         lb1.setFixedSize(200,100)
         rightlayout.addWidget(lb1)
-        self.score = QLabel("80%")
+        self.score = QLabel(self)
+        self.score.setText(str(float("{:.2f}".format(averagescore*100))) + "%")
+        print(averagescore*100 , "---------------------------------------")
         self.score.setFixedSize(200,100)
         self.score.setFont(QtGui.QFont("Times" , 32 , QtGui.QFont.Bold))
         self.score.setAlignment(QtCore.Qt.AlignCenter)
@@ -238,22 +247,30 @@ class UploadPage():
         header = self.table.horizontalHeader()
         header.setStretchLastSection(True)
 class SecondPage:
-    def __init__(self, *args, **kwargs):
+    def initsecond(self):
+        self.secondwindow = QWidget()
+        SecondLayout = QVBoxLayout(self.secondwindow)
+        self.test = QLabel(self)
         self.upload = QPushButton(self)
         self.developer = QPushButton(self)
+        self.test1 = QLabel(self)
         self.upload.setText("Upload")
         self.developer.setText("Developer")
         self.upload.setStyleSheet("border-radius: 25px;border: 1px solid black;")
         self.developer.setStyleSheet("border-radius: 25px;border: 1px solid black;")
         # self.upload.setStyleSheet("background: transparent;"),self.developer.setStyleSheet("background: transparent;")
         self.upload.setFont(QtGui.QFont("Times" , 16)),self.developer.setFont(QtGui.QFont("Times" , 16))
-        self.upload.resize(200,100),self.developer.resize(200,100)
-        self.upload.move(500,250),self.developer.move(500,450)
-        self.upload.close(),self.developer.close()
+        # self.upload.resize(200,100),self.developer.resize(200,100)
+        self.upload.setFixedSize(200,100),self.developer.setFixedSize(200,100)
+        SecondLayout.addWidget(self.test , 1 , QtCore.Qt.AlignCenter)
+        SecondLayout.addWidget(self.upload , 1 , QtCore.Qt.AlignCenter)
+        SecondLayout.addWidget(self.developer , 1 , QtCore.Qt.AlignCenter)
+        SecondLayout.addWidget(self.test1 , 1 , QtCore.Qt.AlignCenter)
     def showpage2(self):
-        self.upload.show(),self.developer.show()
+        self.test.show(),self.upload.show(),self.developer.show(),self.test1.show()
     def closepage2(self):
-        self.upload.close(),self.developer.close()
+        self.test.close(),self.upload.close(),self.developer.close(),self.test1.close()
+        self.secondwindow.setParent(None)
 
 class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage,DeveloperPage):
     def __init__(self, *args, **kwargs):
@@ -268,26 +285,27 @@ class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage,DeveloperPage):
         self.clickbutton()
     def initbutton(self):
         self.icon = QLabel(self)
-        self.icon.setFont(QtGui.QFont("Times" , 18 , QtGui.QFont.Bold))
-        self.icon.setStyleSheet("border-radius: 25px;border: 2px solid black;")
+        self.icon.setFont(QtGui.QFont("Consolas" , 48))
+        # self.icon.setStyleSheet("border-radius: 25px;border: 0px solid black;")
         self.icon.setAlignment(QtCore.Qt.AlignCenter)
         self.startbutton = QPushButton(self)
         self.startbutton.setFont(QtGui.QFont("Times" , 18))
         self.startbutton.setStyleSheet("border-radius: 25px;border: 2px solid black;")
         # self.startbutton.setStyleSheet("background: transparent;")
-        self.icon.setText("ILD DIAGNOSIS"),self.startbutton.setText("Enter")
-        self.icon.resize(300,150),self.startbutton.resize(200,100)
-        self.icon.move(450,250),self.startbutton.move(500 , 400)
+        self.icon.setText("ILD\nDIAGNOSIS"),self.startbutton.setText("Enter")
+        self.icon.resize(600,300),self.startbutton.resize(200,100)
+        self.icon.move(300,100),self.startbutton.move(500 , 450)
         self.icon.show(),self.startbutton.show()
     def clickbutton(self):
         self.startbutton.clicked.connect(self.clickstart)
-        self.upload.clicked.connect(self.clickupload)
         self.result.clicked.connect(self.clickresult)
-        self.developer.clicked.connect(self.clickdeveloper)
         self.choose.clicked.connect(self.clickchoose)
     def clickstart(self):
+        self.initsecond()
+        self.setCentralWidget(self.secondwindow)
         self.icon.close(),self.startbutton.close()
-        super(FirstWindow,self).showpage2()
+        self.developer.clicked.connect(self.clickdeveloper)
+        self.upload.clicked.connect(self.clickupload)
     def clickupload(self):
         super(FirstWindow,self).closepage2()
         super(FirstWindow,self).showpageupload()
@@ -299,18 +317,20 @@ class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage,DeveloperPage):
             QMessageBox.about(self,'Warning', u"Please enter patient name and date")
         else:
             super(FirstWindow,self).closepageupload()
-            print("rootpath = " , self.rootpath + "Seg/", "filelist:" , self.filelist)
-            preprocess.GrayScale(self.rootpath , self.filelist) #run Grayscale and Segmentation function from preprocessing
+            print("rootpath = " , self.rootpath, "filelist:" , self.filelist)
+            # preprocess.GrayScale(self.rootpath , self.filelist) #run Grayscale and Segmentation function from preprocessing
             des_path = self.rootpath+"Result/"
             if not os.path.isdir(os.getcwd().replace('\\' , '/') + '/' + des_path):
                 os.mkdir(os.getcwd().replace('\\' , '/') + '/' + des_path)
-            # return_file , return_value = predict.pred_ild(self.filelist , self.rootpath+"Seg/" , des_path)
-            return_file = ["test/Seg/ILD06_51.jpg" , "test/Seg/ILD06_55.jpg"]
-            return_value = ["43" , "55"]
+            return_file , return_value = predict.pred_ild(self.filelist , self.rootpath, des_path)
+            # return_file = ["test/Seg/ILD06_51.jpg" , "test/Seg/ILD06_55.jpg"]
+            # return_file = ["0.jpg" , "0.png"]
+            # return_value = [43 , 55]
             super(FirstWindow,self).setpage(self.temp2 , return_file , return_value)
             self.setCentralWidget(self.window)
             self.name.setText(self.patient.text())
             self.backtomenu.clicked.connect(self.clickbacktomenu)
+            self.showMaximized()
     def clickdeveloper(self):
         super(FirstWindow,self).closepage2()
         super(FirstWindow,self).setdevelop()
@@ -324,21 +344,19 @@ class FirstWindow(QMainWindow,SecondPage,UploadPage,ResultPage,DeveloperPage):
     def clickchoose(self):
         super(FirstWindow,self).openFileNamesDialog()
     def clickbacktomenu(self):
-        # super(FirstWindow,self).closeresultpage()
-        super(FirstWindow,self).showpage2()
+        self.clickstart()
         super(FirstWindow,self).newbutton()
         # self.backtomenu.clicked.connect(self.clickbacktomenu)
         self.temp = []
         self.temp2 = []
         self.rootpath = ""
         self.filelist = []
+        self.label1.setText("已上傳：0")
         self.window.setParent(None) #close result page's layout
     def clickdetail(self):
-        print("===")
-        # self.detail.close()
+        self.clickstart()
         self.window2.setParent(None)
         self.detail.close()
-        super(FirstWindow,self).showpage2()
 if __name__ == '__main__':
     print('__name__' , __name__)
     app = QApplication(sys.argv)
