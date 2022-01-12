@@ -1,6 +1,6 @@
 # Computer Project Design
-# A U-Net Based Approach to Helping Doctors Detect Interstitial Lung Disease Extent
+## A U-Net Based Approach to Helping Doctors Detect Interstitial Lung Disease Extent
 
-![Segmentation](https://imgur.com/HvAMubo)
+![Segmentation](./img/report1.png)
 
-![Result of U-net Model](https://imgur.com/M7NFOkj)
+![Result of U-net Model](./img/report2.png)
